@@ -1,3 +1,7 @@
+
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -93,6 +97,10 @@ ipython_config.py
 #   having no cross-platform support, pipenv may install dependencies that don't work, or not
 #   install all needed dependencies.
 #Pipfile.lock
+
+# Credentials and sensitive files
+youtube_knowledge/data/service_account.json
+youtube_knowledge/data/credentials.json
 
 # UV
 #   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
