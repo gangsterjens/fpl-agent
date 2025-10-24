@@ -18,5 +18,5 @@ class SupabaseClient:
         self.client.table(table_name).upsert(
             data,
             on_conflict=unique_column,
-            ignore_duplicates=True,   # translates to DO NOTHING
+            ignore_duplicates=True,  
             ).execute()
