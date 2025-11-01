@@ -5,6 +5,8 @@ import time
 import os 
 from dotenv import load_dotenv
 from llm import llm
+import prompts
+import fpl_api as fpl
 load_dotenv()
 channel_id = 'UCcPWnCj5AKC19HaySZjb25g'
 video_id = 'txMrwVepihc'
@@ -30,29 +32,42 @@ def get_transcript(video_id) -> list[dict]:
 
 def upload_full_transcript(video_id) -> None:
     transcript_data = get_transcript(video_id)
-    # get metadata from video 
-    full_text = " ".join(item["text"] for item in transcript_data)
-    
-    where_statement = ('video_id', video_id)
-    video_meta = sb.get_data('videos', where_statement=where_statement)
-    prompt = f"""
-        Refine this text from a YouTube transcript. Here is the metadata from the videos 'About':
-        {video_meta} T
-        he text you are to refine comes under in user input. 
 
-        Only return the refined text. Not 'certainly here is the refined text' etc etc.. only the text that is refined
-        """
+    # get metadata from video 
+    print('Concatenating text')
+    full_text = " ".join(item["text"] for item in transcript_data)
+    print('Concatenating text_END')
+
+    where_statement = ('video_id', video_id)
+
+    print('### FETCHING METADATA FROM VIDEOS')
+    video_meta = sb.get_data('videos', where_statement=where_statement)
+    print('### DONE______FETCHING METADATA FROM VIDEOS')
+
+    print('fetching players')
+    players = fpl.get_player_info()
+    print('fetching players_done')
+
+    prompt = prompts.REFINE_TR_PROMPT
+    prompt = prompt.format(players=players, video_meta=video_meta)
+    length = len(full_text.split()) + len(prompt.split())
+    print(f"sending in a total of {length} words")
+    print('#### REFINING TEXT')
     refined_text = llm(full_text ,prompt)
+    print('#### REFINING TEXT____DONE')
 
     data = {
         'video_id': video_id,
         'text': refined_text
     }
+    print('UPSERTING DATA')
     try:
-        sb.upsert_data('transcripts', data, 'video_id')
+        sb.upsert_data('transcripts', data, 'video_id', not_refresher=False)
         print('Inserted/Updated full transcript for video:', video_id)
     except Exception as e:
         print('Error inserting/updating full transcript for video:', video_id, 'Error:', e)
+
+    print('UPSERTING DATA___DONE')
 
 
 if __name__ == "__main__":

@@ -21,9 +21,9 @@ class SupabaseClient:
 
         return query.execute()
     
-    def upsert_data(self, table_name: str, data: dict, unique_column: str = None):
+    def upsert_data(self, table_name: str, data: dict, unique_column: str = None, not_refresher=True):
         self.client.table(table_name).upsert(
             data,
             on_conflict=unique_column,
-            ignore_duplicates=True,  
+            ignore_duplicates=not_refresher,  
             ).execute()
