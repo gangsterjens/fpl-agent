@@ -4,10 +4,10 @@ class SupabaseClient:
     def __init__(self, key, url):
         self.client = create_client(url, key)
 
-    def insert_data(self, table_name, data):
+    def insert_data(self, table_name: str, data: dict) -> None:
         self.client.table(table_name).insert(data).execute()
 
-    def get_data(self, table_name, where_statement: tuple = None):
+    def get_data(self, table_name, where_statement: tuple = None) -> dict:
         query = self.client.table(table_name).select("*")
 
         if where_statement:
@@ -21,9 +21,9 @@ class SupabaseClient:
 
         return query.execute()
     
-    def upsert_data(self, table_name: str, data: dict, unique_column: str = None):
+    def upsert_data(self, table_name: str, data: dict, unique_column: str = None, not_refresher=True) -> None:
         self.client.table(table_name).upsert(
             data,
             on_conflict=unique_column,
-            ignore_duplicates=True,  
+            ignore_duplicates=not_refresher,  
             ).execute()

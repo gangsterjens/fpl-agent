@@ -1,3 +1,4 @@
+import get_videos as gv
 import json
 from youtube_transcript_api import YouTubeTranscriptApi
 import supabase_client as sc
@@ -5,9 +6,11 @@ import time
 import os 
 from dotenv import load_dotenv
 from llm import llm
+import prompts
+import fpl_api as fpl
 load_dotenv()
-channel_id = 'UCcPWnCj5AKC19HaySZjb25g'
-video_id = 'txMrwVepihc'
+# channel_id = 'UCcPWnCj5AKC19HaySZjb25g'
+# video_id = 'txMrwVepihc'
 sb = sc.SupabaseClient(os.getenv('SB_API_KEY'), os.getenv('SB_URL'))
 def get_transcript(video_id) -> list[dict]:
 
@@ -24,38 +27,67 @@ def get_transcript(video_id) -> list[dict]:
         el['video_id'] = video_id
 
     return data
-    # # Write to JSON file
-    # with open('data_1.json', 'w', encoding='utf-8') as f:
-    #     json.dump(data, f, ensure_ascii=False, indent=4)
 
 def upload_full_transcript(video_id) -> None:
     transcript_data = get_transcript(video_id)
-    # get metadata from video 
-    full_text = " ".join(item["text"] for item in transcript_data)
-    
-    where_statement = ('video_id', video_id)
-    video_meta = sb.get_data('videos', where_statement=where_statement)
-    prompt = f"""
-        Refine this text from a YouTube transcript. Here is the metadata from the videos 'About':
-        {video_meta} T
-        he text you are to refine comes under in user input. 
 
-        Only return the refined text. Not 'certainly here is the refined text' etc etc.. only the text that is refined
-        """
-    refined_text = llm(full_text ,prompt)
+    # get metadata from video 
+    print('Concatenating text')
+    full_text = " ".join(item["text"] for item in transcript_data)
+
+    where_statement = ('video_id', video_id)
+
+    print('### FETCHING METADATA FROM VIDEOS')
+    video_meta = sb.get_data('videos', where_statement=where_statement)
+
+    print('fetching players')
+    players = fpl.get_player_info()
+
+    prompt = prompts.REFINE_TR_PROMPT
+    prompt = prompt.format(players=players, video_meta=video_meta)
+    length = len(full_text.split()) + len(prompt.split())
+    print(f"sending in a total of {length} words")
+    print('#### REFINING TEXT')
+    refined_text = llm(full_text, prompt)
+    print('#### REFINING TEXT____DONE')
 
     data = {
         'video_id': video_id,
         'text': refined_text
     }
+    print('UPSERTING DATA')
     try:
-        sb.upsert_data('transcripts', data, 'video_id')
+        sb.upsert_data('transcripts', data, 'video_id', not_refresher=False)
         print('Inserted/Updated full transcript for video:', video_id)
     except Exception as e:
         print('Error inserting/updating full transcript for video:', video_id, 'Error:', e)
 
+    print('___DONE')
+
+def get_transcript_candidates(rewrite=True) -> list:
+    if rewrite:
+        data = sb.get_data('transcript_candidates_rewrite')
+    else:
+        data = sb.get_data('transcript_candidates')
+    candidates = []
+    
+    for id in data.data:
+        candidates.append(id['video_id'])
+    return candidates
+
+def fill_up_latest() -> None:
+    gv.get_videos()
+    fpl.upload_gw_to_sb()
+    candidates = get_transcript_candidates()
+    if len(candidates) < 1:
+        print('No new transcripts available')
+        return None
+    for video_id in candidates:
+        upload_full_transcript(video_id=video_id)
 
 if __name__ == "__main__":
-    upload_full_transcript(video_id=video_id)
+    fill_up_latest()
+    
+
 
 
