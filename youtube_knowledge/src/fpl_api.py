@@ -10,6 +10,9 @@ import datetime
 load_dotenv()
 
 def get_fpl_event_data() -> list[dict]:
+    """
+    fetches the gameweek info from the official fpl-api. Important for keeping track of what gameweek it is, and whats the current deadline and last events timestamp.
+    """
     url = 'https://fantasy.premierleague.com/api/bootstrap-static/'
     data = requests.get(url)
     data = data.json()
@@ -18,12 +21,16 @@ def get_fpl_event_data() -> list[dict]:
     return gw_info
 
 def upload_gw_to_sb() -> None:
+    """
+    Updates the latest gameweek-info. Important to keep track of last gw and the upcoming deadline
+    """
+
     fpl_data = get_fpl_event_data()
     sb = sc.SupabaseClient(os.getenv('SB_API_KEY'), os.getenv('SB_URL'))
     for event in fpl_data:
         event['inserted_at'] = datetime.datetime.utcnow().isoformat()
         try:
-            sb.upsert_data('fpl_gameweek_info', event, 'name')
+            sb.upsert_data('fpl_gameweek_info', event, 'name', not_refresher=False)
             print('updated FPL event data:', event['name'])
         except Exception as e:
             print('Error inserting/updating FPL event data:', e)
@@ -44,7 +51,7 @@ def get_between_gw() -> tuple[datetime.datetime, datetime.datetime]:
 
 def get_player_info():
     """
-    Fethces the the status of the players. Their name, who is eligible and so on. 
+    Fetches the the status of the players. Their name, who is eligible and so on. 
 
     """
     url = 'https://fantasy.premierleague.com/api/bootstrap-static/'
