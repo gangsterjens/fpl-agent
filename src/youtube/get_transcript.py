@@ -82,8 +82,15 @@ def fill_up_latest() -> None:
     if len(candidates) < 1:
         print('No new transcripts available')
         return None
+    failed = []
     for video_id in candidates:
-        upload_full_transcript(video_id=video_id)
+        try:
+            upload_full_transcript(video_id=video_id)
+        except Exception as e:
+            print(f'Skipping video {video_id}: {e}')
+            failed.append(video_id)
+    if failed:
+        print(f'\nFailed/skipped {len(failed)} videos (will be retried next run): {failed}')
 
 if __name__ == "__main__":
     fill_up_latest()

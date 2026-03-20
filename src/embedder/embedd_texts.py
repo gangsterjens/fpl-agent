@@ -47,38 +47,53 @@ class VectorStore:
             docs
         )
 
-    def query(self, query_text: str, k=5, min_date='2025-08-01'):
-        # 1. Manually generate the embedding for the query
-        # Using the self.embeddings you initialized in __init__
+    def query(self, query_text: str, k=5, min_date='2025-08-01', max_date='2099-12-31'):
         query_embedding = self.embeddings.embed_query(query_text)
-        
-        # 2. Call your SQL function directly via the Supabase client
-        # This bypasses the buggy LangChain similarity_search code
         response = self.supabase.rpc(
             "match_embedded_documents",
             {
                 "query_embedding": query_embedding,
                 "match_count": k,
                 "min_published_at": min_date,
-                "filter": {}  # You can pass other metadata filters here
+                "filter": {}
             }
         ).execute()
-        
         return response.data
 
-if __name__ == "__main__":
+    def hybrid_query(self, query_text: str, k=5, min_date='2025-08-01', max_date='2099-12-31',
+                     full_text_weight=1.0, semantic_weight=1.0, rrf_k=50):
+        query_embedding = self.embeddings.embed_query(query_text)
+        response = self.supabase.rpc(
+            "hybrid_search_embedded_documents",
+            {
+                "query_text": query_text,
+                "query_embedding": query_embedding,
+                "match_count": k,
+                "min_published_at": min_date,
+                "max_published_at": max_date,
+                "full_text_weight": full_text_weight,
+                "semantic_weight": semantic_weight,
+                "rrf_k": rrf_k,
+            }
+        ).execute()
+        return response.data
+
+def embed_new_videos():
     sb_client = sc.SupabaseClient(
         os.getenv('SB_API_KEY'),
         os.getenv('SB_URL')
-    )
-    data = sb_client.get_data(
-        'transcripts'
     )
 
     videos = sb_client.get_data(
         'videos', where_statement=('has_vectors', False)
     )
-    
+
+    if not videos.data:
+        print('No new videos to embed')
+        return
+
+    vector_store = VectorStore()
+
     for el in videos.data:
         transcript = sb_client.get_data(
             'transcripts', where_statement=('video_id', el['video_id'])
@@ -87,10 +102,7 @@ if __name__ == "__main__":
             print(f'No transcript for video_id: {el["video_id"]}')
             continue
 
-        # __________ EMBED TEXTS __________
-
         print(f'Processing video_id: {el["video_id"]}, title: {el["title"]}')
-        vector_store = VectorStore()        
         video_id = el['video_id']
         text = transcript.data[0]['text']
         metadata = {
@@ -112,22 +124,8 @@ if __name__ == "__main__":
             column_name="has_vectors",
             value=True,
             id_column="video_id"
-            )
+        )
 
 
-    
-    
-
-    # vector_store = VectorStore()
-
-    # for el in data:
-    #     video_id = el['video_id']
-    #     text = el['text']
-    #     metadata = {
-    #         'video_id': video_id
-    #     }
-    #     print(f'Embedding video_id: {video_id}')
-    #     vector_store.embed_text(
-    #         doc=text,
-    #         metadata=metadata
-    #     )
+if __name__ == "__main__":
+    embed_new_videos()

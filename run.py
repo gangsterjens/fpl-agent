@@ -1,11 +1,7 @@
 from src.youtube import get_transcript as gt
-from src.youtube import get_videos as gv
+from src.embedder.embedd_texts import embed_new_videos
 
 
 if __name__ == "__main__":
-    #gt.get_transcript(video_id='6cFaRIS7msc')
-    gv.get_videos()
-
-
-
-
+    gt.fill_up_latest()
+    embed_new_videos()

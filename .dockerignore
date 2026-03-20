@@ -1,0 +1,11 @@
+.venv/
+.git/
+.env
+.env.*
+data/
+__pycache__/
+*.pyc
+.mcp.json
+assets/
+runs/
+youtube_knowledge/

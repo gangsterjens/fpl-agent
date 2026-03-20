@@ -1,0 +1,46 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches: [main, utv-chatbot]
+
+env:
+  PROJECT_ID: skjellfjord
+  REGION: europe-west1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set service name
+        id: service
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "name=fpl-agent" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=fpl-agent-dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ steps.service.outputs.name }} \
+            --source . \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --memory 512Mi \
+            --set-secrets "OPENAI_API_KEY=OPENAI_API_KEY:latest,SB_URL=SB_URL:latest,SB_API_KEY=SB_API_KEY:latest" \
+            --project ${{ env.PROJECT_ID }}

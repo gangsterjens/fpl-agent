@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#37003C"/>
+      <stop offset="100%" style="stop-color:#2D0033"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00FF87"/>
+      <stop offset="100%" style="stop-color:#04F5FF"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="url(#bg)" stroke="url(#glow)" stroke-width="3"/>
+  <!-- Soccer ball (simplified) -->
+  <circle cx="100" cy="72" r="30" fill="none" stroke="url(#glow)" stroke-width="2.5"/>
+  <polygon points="100,48 108,58 104,68 96,68 92,58" fill="url(#glow)" opacity="0.3"/>
+  <polygon points="115,62 122,72 118,82 108,80 108,68" fill="url(#glow)" opacity="0.3"/>
+  <polygon points="85,62 78,72 82,82 92,80 92,68" fill="url(#glow)" opacity="0.3"/>
+  <polygon points="92,80 96,92 104,92 108,80 100,76" fill="url(#glow)" opacity="0.3"/>
+  <!-- Circuit / AI lines from ball -->
+  <line x1="100" y1="102" x2="100" y2="120" stroke="#00FF87" stroke-width="2" opacity="0.7"/>
+  <circle cx="100" cy="120" r="3" fill="#00FF87" opacity="0.8"/>
+  <line x1="100" y1="120" x2="75" y2="140" stroke="#00FF87" stroke-width="1.5" opacity="0.5"/>
+  <line x1="100" y1="120" x2="125" y2="140" stroke="#00FF87" stroke-width="1.5" opacity="0.5"/>
+  <circle cx="75" cy="140" r="2.5" fill="#04F5FF" opacity="0.8"/>
+  <circle cx="125" cy="140" r="2.5" fill="#04F5FF" opacity="0.8"/>
+  <line x1="75" y1="140" x2="60" y2="155" stroke="#04F5FF" stroke-width="1" opacity="0.4"/>
+  <line x1="75" y1="140" x2="85" y2="158" stroke="#04F5FF" stroke-width="1" opacity="0.4"/>
+  <line x1="125" y1="140" x2="140" y2="155" stroke="#04F5FF" stroke-width="1" opacity="0.4"/>
+  <line x1="125" y1="140" x2="115" y2="158" stroke="#04F5FF" stroke-width="1" opacity="0.4"/>
+  <circle cx="60" cy="155" r="2" fill="#04F5FF" opacity="0.6"/>
+  <circle cx="85" cy="158" r="2" fill="#04F5FF" opacity="0.6"/>
+  <circle cx="140" cy="155" r="2" fill="#04F5FF" opacity="0.6"/>
+  <circle cx="115" cy="158" r="2" fill="#04F5FF" opacity="0.6"/>
+  <!-- FPL text -->
+  <text x="100" y="185" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="20" font-weight="900" fill="#00FF87" letter-spacing="4">FPL</text>
+  <!-- AGENT sub-text -->
+  <text x="100" y="198" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="600" fill="#04F5FF" letter-spacing="6" opacity="0.9">AGENT</text>
+</svg>
