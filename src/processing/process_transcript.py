@@ -1,8 +1,8 @@
 import json
-import supabase_client as sc
-from llm import llm
-import prompts
-from json_parser import tekst2json
+from src.db import supabase_client as sc
+from src.processing.llm import llm
+from src.processing import prompts
+from src.processing.json_parser import tekst2json
 import os
 import time
 from dotenv import load_dotenv

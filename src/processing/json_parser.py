@@ -1,4 +1,4 @@
-from llm import llm
+from src.processing.llm import llm
 import json
 
 def tekst2json(json_text: str) -> dict:

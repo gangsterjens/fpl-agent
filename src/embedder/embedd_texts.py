@@ -4,7 +4,7 @@ from langchain_openai import OpenAIEmbeddings
 from supabase import create_client
 
 from dotenv import load_dotenv
-from src import supabase_client as sc
+from src.db import supabase_client as sc
 from datetime import datetime, timezone
 import os
 load_dotenv()
