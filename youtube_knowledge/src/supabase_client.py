@@ -7,7 +7,7 @@ class SupabaseClient:
     def insert_data(self, table_name: str, data: dict) -> None:
         self.client.table(table_name).insert(data).execute()
 
-    def get_data(self, table_name, where_statement: tuple = None) -> dict:
+    def get_data(self, table_name: str, where_statement: tuple = None) -> dict:
         query = self.client.table(table_name).select("*")
 
         if where_statement:
@@ -27,3 +27,16 @@ class SupabaseClient:
             on_conflict=unique_column,
             ignore_duplicates=not_refresher,  
             ).execute()
+        
+    def set_column_by_id(
+        self,
+        table_name: str,
+        row_id,
+        column_name: str,
+        value,
+        id_column: str = "id"
+    ) -> None:
+        (
+            self.client.table(table_name).update({column_name: value}).eq(id_column, row_id).execute()
+        )
+
