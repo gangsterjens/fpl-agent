@@ -78,6 +78,34 @@ class VectorStore:
         ).execute()
         return response.data
 
+    def search_player_facts(self, player_name: str, action_filter: str = None,
+                            min_date: str = '2025-08-01', max_date: str = '2099-12-31',
+                            limit: int = 20):
+        params = {
+            "p_player_name": player_name,
+            "p_action_filter": action_filter,
+            "p_min_date": min_date,
+            "p_max_date": max_date,
+            "p_limit": limit,
+        }
+        response = self.supabase.rpc("search_player_facts", params).execute()
+        return response.data
+
+    def hybrid_facts_query(self, query_text: str, min_date: str = '2025-08-01',
+                           max_date: str = '2099-12-31', k: int = 10):
+        """Combine structured player facts with vector search on raw chunks."""
+        # Structured facts — extract player name from query for best-effort matching
+        words = query_text.split()
+        facts = []
+        if len(words) <= 6:
+            # Short query likely contains a player name — search facts directly
+            facts = self.search_player_facts(query_text, min_date=min_date, max_date=max_date)
+
+        # Vector search on raw transcript chunks
+        chunks = self.hybrid_query(query_text, k=k, min_date=min_date, max_date=max_date)
+
+        return {"facts": facts, "chunks": chunks}
+
 def embed_new_videos():
     sb_client = sc.SupabaseClient(
         os.getenv('SB_API_KEY'),

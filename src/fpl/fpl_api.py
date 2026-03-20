@@ -123,6 +123,105 @@ def get_gameweek_live(event_id: int) -> dict:
     return resp.json()
 
 
+class FPLAuthClient:
+    """Authenticated FPL client for team management operations."""
+
+    LOGIN_URL = 'https://users.premierleague.com/accounts/login/'
+    API_BASE = 'https://fantasy.premierleague.com/api'
+
+    def __init__(self, email: str, password: str):
+        self.email = email
+        self.password = password
+        self.session = requests.Session()
+        self._manager_id: int | None = None
+        self._login()
+
+    def _login(self):
+        # GET the login page to obtain csrftoken cookie
+        self.session.get('https://users.premierleague.com/accounts/login/')
+        csrftoken = self.session.cookies.get('csrftoken')
+        if not csrftoken:
+            raise RuntimeError('Could not obtain CSRF token from FPL login page')
+
+        payload = {
+            'login': self.email,
+            'password': self.password,
+            'app': 'plfpl-web',
+            'redirect_uri': 'https://fantasy.premierleague.com/',
+            'csrfmiddlewaretoken': csrftoken,
+        }
+        resp = self.session.post(
+            self.LOGIN_URL,
+            data=payload,
+            headers={'Referer': 'https://users.premierleague.com/accounts/login/'},
+        )
+        resp.raise_for_status()
+
+        if 'pl_profile' not in self.session.cookies.get_dict():
+            raise RuntimeError(
+                'FPL login failed — pl_profile cookie not set. Check email/password.'
+            )
+
+    def _csrf_header(self) -> dict:
+        token = self.session.cookies.get('csrftoken', '')
+        return {'X-CSRFToken': token, 'Referer': 'https://fantasy.premierleague.com/'}
+
+    def get_manager_id(self) -> int:
+        if self._manager_id:
+            return self._manager_id
+        resp = self.session.get(f'{self.API_BASE}/me/')
+        resp.raise_for_status()
+        data = resp.json()
+        self._manager_id = data['player']['entry']
+        return self._manager_id
+
+    def get_my_team(self, manager_id: int) -> dict:
+        resp = self.session.get(f'{self.API_BASE}/my-team/{manager_id}/')
+        resp.raise_for_status()
+        return resp.json()
+
+    def make_transfer(self, manager_id: int, transfers_payload: list[dict], event_id: int) -> dict:
+        body = {
+            'confirmed': True,
+            'entry': manager_id,
+            'event': event_id,
+            'transfers': transfers_payload,
+        }
+        resp = self.session.post(
+            f'{self.API_BASE}/transfers/',
+            json=body,
+            headers=self._csrf_header(),
+        )
+        resp.raise_for_status()
+        return resp.json() if resp.content else {'status': 'ok'}
+
+    def set_lineup(self, manager_id: int, picks: list[dict], chip: str | None = None) -> dict:
+        body = {'picks': picks}
+        if chip:
+            body['chip'] = chip
+        resp = self.session.post(
+            f'{self.API_BASE}/my-team/{manager_id}/',
+            json=body,
+            headers=self._csrf_header(),
+        )
+        resp.raise_for_status()
+        return resp.json() if resp.content else {'status': 'ok'}
+
+
+_auth_client: FPLAuthClient | None = None
+
+
+def get_auth_client() -> FPLAuthClient:
+    global _auth_client
+    if _auth_client is None:
+        email = os.getenv('FPL_EMAIL')
+        password = os.getenv('FPL_PASSWORD')
+        if not email or not password:
+            raise RuntimeError('FPL_EMAIL and FPL_PASSWORD must be set in environment')
+        _auth_client = FPLAuthClient(email, password)
+    return _auth_client
+
+
 if __name__ == "__main__":
     upload_gw_to_sb()
 

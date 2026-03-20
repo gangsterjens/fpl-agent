@@ -46,3 +46,30 @@ def search_transcripts(query: str) -> str:
             f"[{i}] {title} ({channel}, {published}):\n{content}"
         )
     return "\n\n---\n\n".join(results)
+
+
+@tool
+def search_player_recommendations(player_name: str) -> str:
+    """Search structured podcast recommendations for a specific FPL player.
+    Returns buy/sell/keep/monitor/avoid recommendations extracted from podcasts.
+    Use this when the user asks about a specific player transfer decision.
+    """
+    vs = _get_vector_store()
+    min_date, max_date = _get_gw_window()
+    facts = vs.search_player_facts(
+        player_name, min_date=min_date, max_date=max_date,
+    )
+    if not facts:
+        return f"No structured recommendations found for '{player_name}'."
+
+    results = []
+    for i, f in enumerate(facts, 1):
+        title = f.get("title", "Unknown")
+        channel = f.get("channel_name", "")
+        published = (f.get("published_at") or "")[:10]
+        action = f.get("action", "unknown").upper()
+        reason = f.get("reason", "")
+        results.append(
+            f"[{i}] **{action}** — {title} ({channel}, {published})\n{reason}"
+        )
+    return "\n\n---\n\n".join(results)

@@ -33,6 +33,36 @@ REFINE_TR_PROMPT = """
 """
 
 
+EXTRACT_FACTS_PROMPT = """
+    You are an FPL (Fantasy Premier League) analyst. Extract structured facts from this podcast transcript.
+
+    Return a JSON object with exactly this structure:
+    {{
+      "overthoughts": ["string", ...],
+      "players": [
+        {{
+          "name": "Player Name",
+          "action": "buy" | "keep" | "sell" | "monitor" | "avoid",
+          "reason": "Brief explanation of the recommendation"
+        }}
+      ]
+    }}
+
+    Rules:
+    - "overthoughts" are general strategic tips, meta-observations, or chip/wildcard advice (not player-specific).
+    - For each player mentioned with a clear recommendation, add an entry to "players".
+    - "action" must be exactly one of: buy, keep, sell, monitor, avoid.
+    - "reason" should be 1-2 sentences explaining why.
+    - Use the player's most recognizable name (e.g. "Haaland" not "Erling Haaland").
+    - Only extract what is actually said. Do not invent recommendations.
+    - Return ONLY valid JSON. No markdown, no explanation.
+
+    Transcript:
+    <transcript>
+    {transcript}
+    </transcript>
+"""
+
 JSON_SUMMARY = """
     Summarize this text as a json, with the following json structure 
     {{
