@@ -99,8 +99,8 @@ ipython_config.py
 #Pipfile.lock
 
 # Credentials and sensitive files
-youtube_knowledge/data/service_account.json
-youtube_knowledge/data/credentials.json
+data/credentials.json
+data/service_account.json
 
 # UV
 #   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.

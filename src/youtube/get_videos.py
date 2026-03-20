@@ -1,5 +1,5 @@
-import channels_fetcher as cf
-import supabase_client as sc
+from src.youtube import channels_fetcher as cf
+from src.db import supabase_client as sc
 from dotenv import load_dotenv
 import os
 import json

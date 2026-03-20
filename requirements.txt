@@ -63,3 +63,6 @@ urllib3==2.5.0
 websockets==15.0.1
 yarl==1.22.0
 youtube-transcript-api==1.2.3
+langchain-openai==1.1.7
+psycopg2-binary==2.9.11
+langchain-community==0.4.1

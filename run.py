@@ -1,5 +1,5 @@
-from runs import get_transcript as gt
-from runs import get_videos as gv 
+from src.youtube import get_transcript as gt
+from src.youtube import get_videos as gv
 
 
 if __name__ == "__main__":

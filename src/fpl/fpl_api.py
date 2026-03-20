@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-import supabase_client as sc
+from src.db import supabase_client as sc
 import os
 from dotenv import load_dotenv
 import datetime

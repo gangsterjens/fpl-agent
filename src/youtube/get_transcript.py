@@ -1,13 +1,13 @@
-import get_videos as gv
+from src.youtube import get_videos as gv
 import json
 from youtube_transcript_api import YouTubeTranscriptApi
-import supabase_client as sc
+from src.db import supabase_client as sc
 import time
-import os 
+import os
 from dotenv import load_dotenv
-from llm import llm
-import prompts
-import fpl_api as fpl
+from src.processing.llm import llm
+from src.processing import prompts
+from src.fpl import fpl_api as fpl
 load_dotenv()
 # channel_id = 'UCcPWnCj5AKC19HaySZjb25g'
 # video_id = 'txMrwVepihc'
